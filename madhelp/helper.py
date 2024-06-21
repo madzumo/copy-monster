@@ -14,6 +14,7 @@ class ConsoleColors(Enum):
     basic = Back.BLACK + Fore.WHITE
     commands = Back.BLACK + Fore.LIGHTBLUE_EX
     warning = Back.MAGENTA + Fore.LIGHTWHITE_EX
+    outro = Back.LIGHTBLUE_EX + Fore.BLACK
 
 
 welcome_message = ["This utility creates a complete CI/CD pipeline to deploy a microservice app in your AWS "
@@ -26,18 +27,18 @@ menu_options = ["Menu Options:", "1 - Set AWS Credentials", "2 - Test AWS Connec
                 "4 - Remove Existing Pipeline & all resources",
                 "5 - View Pipeline Status", "6 - Quit"]
 
-total_line_chars = 50
+total_line_chars = 100
 
-header_art_devops_demo = r"""
+header_art_welcome = r"""
     ___________________    
     |# :           : #|    
-    |  :    Copy   :  |    
-    |  :   Monster :  |    
+    |  :  DevOps   :  |    
+    |  :   demo    :  |    
     |  :___________:  |    
     |     _________   |    
     |    | __      |  |    
-    |    ||  |     |  |        
-    \____||__|_____|__|    
+    |    ||  |     |  |       by Jonathan M. 
+    \____||__|_____|__|   github.com/madzumo 
                                              """
 
 header_art_clean = r"""
@@ -79,8 +80,8 @@ def get_current_time():
 def console_message(message_words, message_color, total_chars=total_line_chars, no_formatting=False, force_pause=False):
     """Display console messages in color. Message_words must be in a LIST []. Each list item will be on its own line.
     Select from ConsoleColors enum for the Color scheme. To have Back color stop with the word instead of full line,
-    use total_chars = 0. For non-color regular console message use no_formatting = True. To have a pause after a
-    message console use force_pause = True"""
+    total_chars = 0. For non-color regular console message, no_formatting = True. To have a pause after showing
+    the message console, force_pause = True"""
 
     paragraph = ''
     multi_word = False
@@ -108,6 +109,7 @@ def console_message(message_words, message_color, total_chars=total_line_chars, 
     if force_pause:
         pause_console()
 
+
 def clear_console():
     # For Windows
     if os.name == 'nt':
@@ -119,23 +121,6 @@ def clear_console():
     print(Style.RESET_ALL + ' ')
 
 
-def end_of_line():
-    pause_console()
-    clear_console()
-    display_header()
-
-
 def pause_console():
     console_message(['hit enter to continue'], ConsoleColors.commands, total_chars=0)
     input('')
-
-
-def display_outro_message():
-    print(Back.LIGHTBLUE_EX + Fore.BLACK + header_art_clean + Style.RESET_ALL + "\n")
-    console_message(['Pipeline removed. Thank you for trying this demo',
-                     'View my other projects at: https://github.com/madzumo'],
-                    ConsoleColors.commands)
-
-
-def display_header():
-    print(Back.LIGHTYELLOW_EX + Fore.BLACK + header_art_devops_demo)
