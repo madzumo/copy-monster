@@ -17,35 +17,38 @@ class AWSbase:
         self.instance_ami = 'ami-0c101f26f147fa7fd'
         self.aws_account_number = ''
 
-    def set_aws_credentials_envars(self):
+    def prompt_aws_creds(self):
         try:
             hc.console_message(['Setup AWS Credentials'], hc.ConsoleColors.title)
             hc.console_message(['Input AWS ACCESS Key ID:'], hc.ConsoleColors.warning)
             self.key_id = input("")
             hc.console_message(['Input AWS SECRET Key ID:'], hc.ConsoleColors.warning)
             self.secret_id = input("")
-
-            os.environ['AWS_ACCESS_KEY_ID'] = self.key_id
-            os.environ['AWS_SECRET_ACCESS_KEY'] = self.secret_id
-            os.environ['AWS_DEFAULT_REGION'] = self.region
+            hc.console_message(['Input region (us-east-1, us-east-2, us-west1):'], hc.ConsoleColors.warning)
+            temp = input("")
+            if temp != "":
+                self.region = temp
             hc.console_message(['AWS Credentials set successfully!'], hc.ConsoleColors.title)
             return True
         except Exception as ex:
             hc.console_message(["Error getting aws credentials", f"{ex}"], hc.ConsoleColors.error)
             return False
 
-    def set_aws_credentials_cli(self):
+    def set_aws_creds_envars(self):
         try:
-            hc.console_message(['Setup AWS Credentials'], hc.ConsoleColors.title)
-            hc.console_message(['Input AWS ACCESS Key ID:'], hc.ConsoleColors.warning)
-            self.key_id = input("")
-            hc.console_message(['Input AWS SECRET Key ID:'], hc.ConsoleColors.warning)
-            self.secret_id = input("")
+            os.environ['AWS_ACCESS_KEY_ID'] = self.key_id
+            os.environ['AWS_SECRET_ACCESS_KEY'] = self.secret_id
+            os.environ['AWS_DEFAULT_REGION'] = self.region
+            return True
+        except Exception as ex:
+            hc.console_message(["Error getting aws credentials", f"{ex}"], hc.ConsoleColors.error)
+            return False
 
+    def set_aws_creds_cli(self):
+        try:
             subprocess.run(['aws', 'configure', 'set', 'aws_access_key_id', self.key_id], check=True)
             subprocess.run(['aws', 'configure', 'set', 'aws_secret_access_key', self.secret_id], check=True)
             subprocess.run(['aws', 'configure', 'set', 'region', self.region], check=True)
-            hc.console_message(['AWS Credentials set successfully!'], hc.ConsoleColors.title)
             return True
         except subprocess.CalledProcessError as e:
             print(f"Error: {e}")
@@ -56,10 +59,10 @@ class AWSbase:
         print(f"Secret:{os.environ.get('AWS_SECRET_ACCESS_KEY')} ")
         print(f"Region:{os.environ.get('AWS_DEFAULT_REGION')} ")
 
-    def check_aws_credentials(self, show_result=True):
+    def test_aws_credentials(self, show_result=True):
         try:
             if show_result:
-                hc.console_message(["Test AWS connection"], hc.ConsoleColors.info)
+                hc.console_message(["Testing AWS connection.."], hc.ConsoleColors.info)
             if self.key_id == '' or self.secret_id == '':
                 hc.console_message(["Missing AWS Access & Secret Key ID"], hc.ConsoleColors.error)
                 return False
@@ -71,7 +74,6 @@ class AWSbase:
             user_details = aws_client.get_user()
             account_number = user_details['User']['Arn'].split(':')[4]
             self.aws_account_number = account_number
-            # credentials = boto3.Session().get_credentials()
 
             if show_result:
                 hc.console_message(["AWS Credentials valid", f"Account:{self.aws_account_number}"],
@@ -105,17 +107,3 @@ class AWSbase:
                 self.key_id = aws_credentials['access']
                 self.secret_id = aws_credentials['secret']
         return aws_credentials
-
-    def get_eks_cluster_status(self, cluster_name):
-        eks_client = boto3.client('eks')
-        try:
-            response = eks_client.describe_cluster(name=cluster_name)
-            if response['cluster']:
-                cluster_status = str(response['cluster']['status']).lower
-                if cluster_status == 'active':
-                    return True
-                else:
-                    return False
-        except Exception as ex:
-            hc.console_message(["Error:", f"{ex}"], hc.ConsoleColors.error)
-            return True

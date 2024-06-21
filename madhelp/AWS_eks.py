@@ -92,3 +92,17 @@ class AWSeks(AWSbase):
         except Exception as e:
             print(f"Error creating role: {e}")
             return ''
+
+    def get_eks_cluster_status(self, cluster_name):
+        eks_client = boto3.client('eks')
+        try:
+            response = eks_client.describe_cluster(name=cluster_name)
+            if response['cluster']:
+                cluster_status = str(response['cluster']['status']).lower
+                if cluster_status == 'active':
+                    return True
+                else:
+                    return False
+        except Exception as ex:
+            hc.console_message(["Error:", f"{ex}"], hc.ConsoleColors.error)
+            return True
